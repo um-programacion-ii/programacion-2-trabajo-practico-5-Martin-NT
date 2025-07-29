@@ -494,6 +494,228 @@ La efectividad del prompt radica en su equilibrio entre explicación teórica y 
 
 ---
 
+## Prompt 4: [Análisis y Explicación de la Capa de Servicio - EmpleadoService]
+
+### Prompt Utilizado:
+```
+Revisa mi codigo EmpleadoService y EmpleadoServiceImpl y luego responde mis dudas:
+
+package um.example.TP5.service;
+import um.example.TP5.entity.Empleado;
+import java.math.BigDecimal;
+import java.util.List;
+
+public interface EmpleadoService {
+    Empleado guardar(Empleado empleado);
+    Empleado buscarPorId(Long id);
+    List<Empleado> buscarPorDepartamento(String nombreDepartamento);
+    List<Empleado> buscarPorRangoSalario(BigDecimal salarioMin, BigDecimal salarioMax);
+    BigDecimal obtenerSalarioPromedioPorDepartamento(Long departamentoId);
+    List<Empleado> obtenerTodos();
+    Empleado actualizar(Long id, Empleado empleado);
+    void eliminar(Long id);
+
+}
+
+package um.example.TP5.service;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import um.example.TP5.entity.Empleado;
+import um.example.TP5.exception.EmailDuplicadoException;
+import um.example.TP5.exception.EmpleadoNoEncontradoException;
+import um.example.TP5.repository.EmpleadoRepository;
+import um.example.TP5.repository.DepartamentoRepository;
+import java.math.BigDecimal;
+import java.util.List;
+
+@Service
+@Transactional
+public class EmpleadoServiceImpl implements EmpleadoService {
+    private final EmpleadoRepository empleadoRepository;
+    private final DepartamentoRepository departamentoRepository;
+
+    // Constructor para inyección de dependencias
+    public EmpleadoServiceImpl(EmpleadoRepository empleadoRepository, DepartamentoRepository departamentoRepository) {
+        this.empleadoRepository = empleadoRepository;
+        this.departamentoRepository = departamentoRepository;
+    }
+
+    @Override
+    public Empleado guardar(Empleado empleado) {
+        if (empleadoRepository.findByEmail(empleado.getEmail()).isPresent()) {
+            throw new EmailDuplicadoException("El email ya está registrado: " + empleado.getEmail());
+        }
+        return empleadoRepository.save(empleado);
+    }
+
+    @Override
+    public Empleado buscarPorId(Long id) {
+        return empleadoRepository.findById(id)
+            .orElseThrow(() -> new EmpleadoNoEncontradoException("Empleado no encontrado con ID: " + id));
+    }
+
+    @Override
+    public List<Empleado> buscarPorDepartamento(String nombreDepartamento) {
+        return empleadoRepository.findByNombreDepartamento(nombreDepartamento);
+    }
+
+    @Override
+    public List<Empleado> buscarPorRangoSalario(BigDecimal salarioMin, BigDecimal salarioMax) {
+        return empleadoRepository.findBySalarioBetween(salarioMin, salarioMax);
+    }
+
+    @Override
+    public BigDecimal obtenerSalarioPromedioPorDepartamento(Long departamentoId) {
+        return empleadoRepository.findAverageSalarioByDepartamento(departamentoId)
+            .orElse(BigDecimal.ZERO);
+    }
+
+    @Override
+    public List<Empleado> obtenerTodos() {
+        return empleadoRepository.findAll();
+    }
+
+    @Override
+    public Empleado actualizar(Long id, Empleado empleado) {
+        if (!empleadoRepository.existsById(id)) {
+            throw new EmpleadoNoEncontradoException("Empleado no encontrado con ID: " + id);
+        }
+        empleado.setId(id);
+        return empleadoRepository.save(empleado);
+    }
+
+    @Override
+    public void eliminar(Long id) {
+        if (!empleadoRepository.existsById(id)) {
+            throw new EmpleadoNoEncontradoException("Empleado no encontrado con ID: " + id);
+        }
+        empleadoRepository.deleteById(id);
+    }
+}
+
+Como experto en Spring Framework, explica:
+
+1. **Conceptos básicos**: ¿Qué es la capa de servicio y por qué separar interfaz de implementación?
+2. **Anotaciones Spring**: Explica @Service, @Transactional y la inyección de dependencias
+3. **Análisis de métodos**: Revisa cada método y explica su lógica de negocio
+4. **Mejores prácticas**: ¿Está bien implementado? ¿Qué mejorarías o falta?
+
+Dame explicaciones concisas con ejemplos cuando sea necesario.
+```
+
+### Respuesta Recibida:
+```
+✅ 1. Conceptos básicos: Capa de servicio + separación de interfaz
+🔹 ¿Qué es la capa de servicio?
+La capa de servicio (Service Layer) es responsable de la lógica de negocio de la aplicación, es decir, cómo se deben ejecutar las operaciones (guardar, buscar, eliminar, etc.) combinando datos y reglas. Actúa como intermediaria entre el controlador y el repositorio (BD).
+
+🔹 ¿Por qué separar interface de implementación?
+- ✅ Buenas prácticas: Permite abstracción y facilita el testing (ej: testear con mocks).
+- ✅ Inversión de dependencias: El código depende de interfaces, no de implementaciones concretas.
+- ✅ Escalabilidad: Podés tener múltiples implementaciones (por ejemplo, una versión para pruebas y otra para producción).
+
+✅ 2. Anotaciones de Spring: @Service, @Transactional, Inyección de dependencias
+🔹 @Service
+- Indica que esta clase es un componente de servicio de Spring.
+- Es detectada automáticamente por @ComponentScan para ser registrada como bean.
+
+🔹 @Transactional
+- Marca que todos los métodos de la clase se ejecutan en una transacción.
+- Si hay un error en medio de una operación, los cambios se deshacen automáticamente (rollback).
+- Muy útil para operaciones de escritura (guardar, actualizar, eliminar).
+
+🔹 Inyección de dependencias
+- Spring inyecta las dependencias automáticamente al crear el bean (@Autowired implícito si es un solo constructor).
+- Permite usar las interfaces sin instanciarlas manualmente.
+
+✅ 3. Análisis de métodos de negocio
+🔸 guardar(Empleado empleado)
+Verifica si el email ya está registrado para evitar duplicados.
+
+- Lanza EmailDuplicadoException si ya existe.
+- Guarda el empleado.
+
+✅ Bien implementado. Podés validar que el departamento exista (opcional).
+
+🔸 buscarPorId(Long id)
+
+- Busca un empleado por ID.
+- Si no lo encuentra, lanza EmpleadoNoEncontradoException.
+
+✅ Perfecto.
+
+🔸 buscarPorDepartamento(String nombreDepartamento)
+- Usa una consulta personalizada para buscar empleados por nombre de departamento.
+
+✅ Bien hecho. Utiliza correctamente el repositorio.
+
+🔸 buscarPorRangoSalario(BigDecimal min, BigDecimal max)
+- Devuelve empleados cuyo salario está entre min y max.
+
+✅ Correcto y eficiente.
+
+🔸 obtenerSalarioPromedioPorDepartamento(Long id)
+- Retorna el salario promedio o 0 si no hay empleados.
+- Utiliza Optional con orElse.
+
+✅ Bien manejado.
+
+🔸 obtenerTodos()
+- Retorna todos los empleados de la BD.
+
+✅ Estándar y útil para listados.
+
+🔸 actualizar(Long id, Empleado empleado)
+- Verifica si existe.
+- Asigna el ID explícitamente.
+- Guarda el objeto actualizado.
+
+⚠️ Mejorable: No valida si el nuevo email ya existe para otro empleado. Podrías agregar:Optional<Empleado> existente = empleadoRepository.findByEmail(empleado.getEmail());
+if (existente.isPresent() && !existente.get().getId().equals(id)) {
+    throw new EmailDuplicadoException("Email ya en uso.");
+}
+
+🔸 eliminar(Long id)
+- Verifica existencia.
+- Elimina si existe, si no lanza excepción.
+
+✅ Correcto.
+
+✅ 4. Mejores prácticas: ¿Qué mejorarías o falta?
+| Aspecto                   | Estado       | Comentario                                                              |
+| ------------------------- | ------------ | ----------------------------------------------------------------------- |
+| Estructura general        | ✅ Correcta   | Cumple con arquitectura por capas                                       |
+| Validaciones              | ⚠️ Parcial   | Agregar validación de duplicado en `actualizar()`                       |
+| Excepciones               | ✅ Bien       | Uso de excepciones personalizadas es adecuado                           |
+| Inyección de dependencias | ✅ Correcta   | Constructor explícito, mejor que usar `@Autowired` directo              |
+| Comentarios y claridad    | ✅ Claro      | Código limpio y comprensible                                            |
+| Robustez                  | ⚠️ Mejorable | Podrías validar existencia del departamento en `guardar` y `actualizar` |
+
+```
+
+### Modificaciones Realizadas:
+- Mejora en el método actualizar(): Se agregó validación para evitar duplicación de email al actualizar un empleado
+- Consideración de validación de departamento: Se evaluó agregar validación de existencia del departamento en los métodos guardar() y actualizar(), pero se mantuvo la implementación actual por simplicidad
+
+### Explicación del Prompt:
+Este prompt fue diseñado para obtener una comprensión integral de la capa de servicio en arquitecturas Spring. La estrategia incluye:
+
+- Enfoque en conceptos fundamentales: Se solicitó explicación de la capa de servicio y el principio de separación interfaz-implementación para epasar y entender el fundamento arquitectónico
+- Análisis de anotaciones Spring: Se priorizó la comprensión de @Service, @Transactional e inyección de dependencias como pilares del framework
+- Revisión método por método: Se pidió análisis detallado de cada operación CRUD para entender la lógica de negocio implementada
+- Evaluación práctica: Se solicitó identificación de mejores prácticas y posibles mejoras para validar y optimizar el código actual
+
+La efectividad del prompt radica en su balance entre teoría y práctica, proporcionando tanto fundamentos conceptuales como análisis aplicado.
+
+### Aprendizajes Obtenidos:
+- Service Layer como intermediario: Comprendí que la capa de servicio actúa como puente entre controladores y repositorios, conteniendo la lógica de negocio de la aplicación
+- Separación interfaz-implementación: Aprendí los beneficios de usar interfaces (testabilidad con mocks, inversión de dependencias, escalabilidad con múltiples implementaciones)
+- Gestión transaccional con @Transactional: Aprendí que permite rollback automático ante errores, crucial para operaciones de escritura que requieren consistencia
+- Arquitectura por capas: Reforcé la importancia de mantener responsabilidades separadas entre Controller, Service y Repository
+Validaciones cruzadas: Descubrí la necesidad de validar relaciones entre entidades (como verificar existencia del departamento al guardar/actualizar empleados)
+
+---
+
 ## Prompt n: [Descripción breve]
 
 ### Prompt Utilizado:
