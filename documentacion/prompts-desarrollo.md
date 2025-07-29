@@ -364,7 +364,133 @@ La efectividad del prompt radica en su especificidad y estructura clara, lo que 
 - Inicialización de colecciones: Validé que inicializar listas con new ArrayList<>() previene NullPointerException y es una buena práctica
 - Naming conventions: Reforcé la importancia de nombres descriptivos y consistentes tanto en atributos Java como en nombres de columnas de base de datos
 - Configuración de constraints: Aprendí sobre el uso efectivo de nullable = false, unique = true y length para garantizar integridad de datos
+
 ---
+
+## Prompt 3: Análisis y Explicación de EmpleadoRepository - Spring Data JPA
+
+### Prompt Utilizado:
+```
+Revisa mi EmpleadoRepository y explica los conceptos de Spring Data JPA:
+
+@Repository
+public interface EmpleadoRepository extends JpaRepository<Empleado, Long> {
+    Optional<Empleado> findByEmail(String email);
+    List<Empleado> findByDepartamento(Departamento departamento);
+    List<Empleado> findBySalarioBetween(BigDecimal salarioMin, BigDecimal salarioMax);
+    List<Empleado> findByFechaContratacionAfter(LocalDate fecha);
+
+    // Consulta personalizada con @Query (JPQL)
+    @Query("SELECT e FROM Empleado e WHERE e.departamento.nombre = :nombreDepartamento")
+    List<Empleado> findByNombreDepartamento(@Param("nombreDepartamento") String nombreDepartamento);
+
+    @Query("SELECT AVG(e.salario) FROM Empleado e WHERE e.departamento.id = :departamentoId")
+    Optional<BigDecimal> findAverageSalarioByDepartamento(@Param("departamentoId") Long departamentoId);
+}
+
+
+Como experto en Spring Data JPA, explica:
+
+1. **Conceptos básicos**: ¿Qué es un Repository y por qué extendemos JpaRepository?
+2. **Query Methods**: Brevd explicacion de cada método findBy para su mayor comprensión
+3. **Custom Queries**: Analiza las consultas @Query y cuándo usarlas
+4. **Mejores prácticas**: ¿Está bien implementado? ¿Qué mejorarías?
+
+Dame explicaciones concisas con ejemplos de código cuando sea necesario.
+```
+
+### Respuesta Recibida:
+```
+1. 🧩 Conceptos básicos: ¿Qué es un Repository y por qué extendemos JpaRepository?
+🔹 ¿Qué es un Repository?
+Es una interfaz que actúa como capa de acceso a datos (DAO). Permite interactuar con la base de datos sin necesidad de escribir SQL explícito.
+
+🔹 ¿Por qué extends JpaRepository<Empleado, Long>?
+- Porque Spring Data JPA:
+- Genera automáticamente métodos CRUD (save, findById, deleteById, etc.).
+- Soporta paginación, ordenamiento y consultas derivadas de nombres de métodos.
+
+Ejemplo:
+empleadoRepository.findById(1L); // ya viene implementado
+
+2. 🔍 Query Methods: explicación breve de cada findBy
+✅ Optional<Empleado> findByEmail(String email)
+Busca un empleado con un email específico. Devuelve Optional por si no lo encuentra.
+empleadoRepository.findByEmail("juan@mail.com");
+
+✅ List<Empleado> findByDepartamento(Departamento departamento)
+Busca todos los empleados que pertenecen a un objeto Departamento.
+empleadoRepository.findByDepartamento(dep); // `dep` es un objeto `Departamento`
+
+✅ List<Empleado> findBySalarioBetween(BigDecimal salarioMin, BigDecimal salarioMax)
+Busca empleados cuyo salario esté en un rango dado.
+empleadoRepository.findBySalarioBetween(
+    new BigDecimal("1000"), new BigDecimal("3000")
+);
+
+✅ List<Empleado> findByFechaContratacionAfter(LocalDate fecha)
+Devuelve los empleados contratados después de una fecha.
+empleadoRepository.findByFechaContratacionAfter(LocalDate.of(2023, 1, 1));
+
+3. 🛠 Custom Queries con @Query
+✅ @Query("SELECT e FROM Empleado e WHERE e.departamento.nombre = :nombreDepartamento")
+Consulta personalizada usando JPQL (Java Persistence Query Language), más expresiva y flexible.
+
+🔎 ¿Por qué usar @Query?
+- Cuando el método es muy complejo para derivar automáticamente.
+- Cuando necesitas usar propiedades de relaciones (como departamento.nombre).
+empleadoRepository.findByNombreDepartamento("Finanzas");
+
+✅ @Query("SELECT AVG(e.salario) FROM Empleado e WHERE e.departamento.id = :departamentoId")
+Devuelve el salario promedio de un departamento. Útil para cálculos agregados.
+empleadoRepository.findAverageSalarioByDepartamento(2L);
+
+4. 🧠 Mejores prácticas y revisión
+✅ Lo que hiciste bien:
+Uso correcto de @Repository.
+
+Uso limpio y claro de JpaRepository.
+
+Optional donde corresponde.
+
+Métodos derivados (findByX) bien nombrados y expresivos.
+
+Consultas personalizadas bien estructuradas con @Query.
+
+⚠️ Sugerencias menores:
+Para mantener claridad, podés mover las consultas personalizadas a una clase EmpleadoCustomRepository si se hacen muy numerosas (→ Separación de responsabilidades).
+
+Añadir @Param en métodos con varios parámetros, incluso cuando Spring los deduce, mejora la legibilidad.
+
+✅ Conclusión
+Tu EmpleadoRepository está muy bien implementado y sigue las buenas prácticas de Spring Data JPA. Las consultas están bien definidas, usando una combinación efectiva de métodos derivados y @Query personalizados.
+
+Si seguís esta estructura para DepartamentoRepository y ProyectoRepository, estás en un muy buen camino. ¿Querés que te ayude a construirlos de forma similar?
+```
+
+### Modificaciones Realizadas:
+- No se realizaron modificaciones al código: La respuesta confirmó que el repositorio estaba bien implementado tal como estaba
+- Validación de estructura: Se confirmó que la combinación de query methods derivados y consultas personalizadas @Query era la apropiada
+
+### Explicación del Prompt:
+Este prompt fue diseñado para obtener una explicación educativa y práctica del repositorio. La estrategia utilizada incluye:
+
+- Enfoque didáctico: Se solicitó explicación de conceptos fundamentales para repasar el aprendizaje teórico
+- Análisis método por método: Se pidió explicación específica de cada query method para entender su funcionamiento
+- Comparación de enfoques: Se incluyó análisis de query methods vs consultas personalizadas para entender cuándo usar cada uno
+- Evaluación práctica: Se solicitó revisión de mejores prácticas para validar la implementación actual
+
+La efectividad del prompt radica en su equilibrio entre explicación teórica y aplicación práctica.
+
+### Aprendizajes Obtenidos:
+- Patrón Repository: Comprendí que el Repository actúa como capa de abstracción entre la lógica de negocio y el acceso a datos, eliminando la necesidad de escribir SQL explícito
+- JpaRepository como superinterface: Aprendí que extender de JpaRepository<Empleado, Long> proporciona automáticamente métodos CRUD, paginación y ordenamiento sin implementación adicional
+- Query Methods derivados: Entendí cómo Spring Data JPA genera automáticamente consultas SQL basándose en los nombres de los métodos (findBy, Between, After, etc.)
+- Uso de Optional: Reforcé la importancia de usar Optional<T> para métodos que pueden retornar null, como findByEmail(), mejorando la seguridad del código
+- JPQL vs SQL nativo: Aprendí que JPQL (Java Persistence Query Language) trabaja con entidades y sus propiedades, no directamente con tablas SQL
+- Navegación de relaciones en @Query: Descubrí cómo acceder a propiedades de entidades relacionadas usando notación de punto (e.departamento.nombre)
+- Funciones agregadas: Comprendí el uso de funciones como AVG() en JPQL para cálculos estadísticos
+- Parámetros nombrados: Aprendí la importancia de @Param para vincular parámetros del método con placeholders en las consultas JPQL
 
 ---
 

@@ -31,7 +31,7 @@ public class Proyecto {
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
 
-    // Un proyecto puede tener muchos empleados 
+    // Un proyecto puede tener muchos empleados
     @ManyToMany(mappedBy = "proyectos")
     private Set<Empleado> empleados = new HashSet<>();
 }
