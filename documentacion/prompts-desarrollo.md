@@ -694,7 +694,6 @@ if (existente.isPresent() && !existente.get().getId().equals(id)) {
 ```
 
 ### Modificaciones Realizadas:
-- Mejora en el método actualizar(): Se agregó validación para evitar duplicación de email al actualizar un empleado
 - Consideración de validación de departamento: Se evaluó agregar validación de existencia del departamento en los métodos guardar() y actualizar(), pero se mantuvo la implementación actual por simplicidad
 
 ### Explicación del Prompt:
@@ -714,6 +713,231 @@ La efectividad del prompt radica en su balance entre teoría y práctica, propor
 - Arquitectura por capas: Reforcé la importancia de mantener responsabilidades separadas entre Controller, Service y Repository
 Validaciones cruzadas: Descubrí la necesidad de validar relaciones entre entidades (como verificar existencia del departamento al guardar/actualizar empleados)
 
+---
+
+## Prompt 5: [Análisis y Explicación de EmpleadoController - API REST Spring MVC]
+
+### Prompt Utilizado:
+```
+Revisa mi EmpleadoController y explica los conceptos de Spring MVC y REST:
+
+package um.example.TP5.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import um.example.TP5.entity.Empleado;
+import um.example.TP5.service.EmpleadoService;
+import java.math.BigDecimal;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/empleados")
+@Validated
+public class EmpleadoController {
+    private final EmpleadoService empleadoService;
+
+    public EmpleadoController(EmpleadoService empleadoService) {
+        this.empleadoService = empleadoService;
+    }
+    
+    @GetMapping
+    public List<Empleado> obtenerTodos() {
+        return empleadoService.obtenerTodos();
+    }
+
+    @GetMapping("/{id}")
+    public Empleado obtenerPorId(@PathVariable Long id) {
+        return empleadoService.buscarPorId(id);
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Empleado crear(@Valid @RequestBody Empleado empleado) {
+        return empleadoService.guardar(empleado);
+    }
+
+    @PutMapping("/{id}")
+    public Empleado actualizar(@PathVariable Long id, @Valid @RequestBody Empleado empleado) {
+        return empleadoService.actualizar(id, empleado);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void eliminar(@PathVariable Long id) {
+        empleadoService.eliminar(id);
+    }
+
+    @GetMapping("/departamento/{nombre}")
+    public List<Empleado> obtenerPorDepartamento(@PathVariable String nombre) {
+        return empleadoService.buscarPorDepartamento(nombre);
+    }
+
+    @GetMapping("/salario")
+    public List<Empleado> obtenerPorRangoSalario(
+        @RequestParam BigDecimal min,
+        @RequestParam BigDecimal max) {
+        return empleadoService.buscarPorRangoSalario(min, max);
+    }
+}
+
+Como experto en Spring MVC y REST APIs, explica:
+
+1. **Conceptos REST**: ¿Qué es @RestController y cómo funciona una API REST?
+2. **Anotaciones de mapeo**: Explica cada anotación (@GetMapping, @PostMapping, etc.) y qué HTTP methods usan
+3. **Parámetros y respuestas**: Analiza @PathVariable, @RequestParam, @RequestBody y códigos de estado HTTP
+4. **Análisis de endpoints**: Revisa cada método y explica qué URL genera y cómo se usa
+5. **Mejores prácticas**: ¿Está bien implementado? ¿Qué mejorarías o falta?
+
+Dame explicaciones concisas con ejemplos de URLs y requests HTTP cuando sea necesario.
+```
+
+### Respuesta Recibida:
+```
+Tu clase EmpleadoController está muy bien estructurada, y sigue los principios fundamentales de Spring MVC y las buenas prácticas de diseño REST. A continuación te explico cada punto solicitado:
+
+✅ 1. Conceptos REST
+¿Qué es @RestController?
+- Es una combinación de @Controller + @ResponseBody.
+- Indica que esta clase maneja peticiones HTTP y devuelve datos JSON directamente como respuesta.
+
+📌 Spring Boot REST API:
+
+Permite que los clientes consuman recursos mediante URLs y métodos HTTP estándar: GET, POST, PUT, DELETE.
+
+✅ 2. Anotaciones de Mapeo
+| Anotación        | Método HTTP | Función                         |
+| ---------------- | ----------- | ------------------------------- |
+| `@GetMapping`    | GET         | Obtener datos                   |
+| `@PostMapping`   | POST        | Crear recursos nuevos           |
+| `@PutMapping`    | PUT         | Actualizar un recurso existente |
+| `@DeleteMapping` | DELETE      | Eliminar un recurso             |
+
+
+🧩 Todas estas anotaciones funcionan dentro del path base definido con @RequestMapping("/api/empleados").
+
+✅ 3. Parámetros y Respuestas
+@PathVariable
+- Extrae una variable desde la URL.
+- Ej: /api/empleados/5 extrae el id = 5.
+
+@RequestParam
+- Extrae valores de la URL tipo query string.
+- Ej: /api/empleados/salario?min=1000&max=5000.
+
+@RequestBody
+- Indica que el cuerpo del request (JSON) debe ser convertido en un objeto Java (Empleado).
+
+@Valid
+- Valida automáticamente el objeto recibido según las restricciones de la clase Empleado.
+
+@ResponseStatus
+- Define el código HTTP manualmente.
+- Ej: CREATED (201) cuando se crea un recurso.
+
+✅ 4. Análisis de Endpoints
+@GetMapping
+public List<Empleado> obtenerTodos()
+
+- GET /api/empleados
+- Devuelve todos los empleados.
+
+@GetMapping("/{id}")
+public Empleado obtenerPorId(@PathVariable Long id)
+
+- GET /api/empleados/1
+- Busca un empleado por ID.
+
+@PostMapping
+@ResponseStatus(HttpStatus.CREATED)
+public Empleado crear(@Valid @RequestBody Empleado empleado)
+
+- POST /api/empleados
+- Cuerpo: JSON con datos del empleado.
+- Crea un nuevo empleado.
+
+@PutMapping("/{id}")
+public Empleado actualizar(@PathVariable Long id, @Valid @RequestBody Empleado empleado)
+
+- PUT /api/empleados/3
+- Cuerpo: JSON actualizado.
+- Actualiza el empleado con ID=3.
+
+@DeleteMapping("/{id}")
+@ResponseStatus(HttpStatus.NO_CONTENT)
+public void eliminar(@PathVariable Long id)
+
+- DELETE /api/empleados/4
+- Elimina el empleado con ID=4.
+
+@GetMapping("/departamento/{nombre}")
+public List<Empleado> obtenerPorDepartamento(@PathVariable String nombre)
+
+- GET /api/empleados/departamento/Sistemas
+- Busca empleados por nombre del departamento.
+
+@GetMapping("/salario")
+public List<Empleado> obtenerPorRangoSalario(@RequestParam BigDecimal min, @RequestParam BigDecimal max)
+
+- GET /api/empleados/salario?min=2000&max=5000
+- Busca empleados con salario entre esos valores.
+
+✅ 5. Mejores Prácticas
+Lo que está bien:
+- Uso correcto de anotaciones Spring MVC.
+- Buen manejo de rutas RESTful.
+- Validación con @Valid.
+- Separación entre controlador y servicio.
+- Uso de @ResponseStatus para respuestas correctas.
+
+🔧 Posibles mejoras:
+1. Manejo de excepciones globales:
+Agregar una clase @ControllerAdvice para capturar y personalizar errores como:
+- EmpleadoNoEncontradoException
+- MethodArgumentNotValidException
+- HttpMessageNotReadableException
+Esto mejora la claridad de las respuestas de error al cliente.
+
+2. Agregar paginación (opcional):
+En obtenerTodos(), podrías usar Pageable para devolver páginas de empleados si la lista es muy grande.
+Ej: GET /api/empleados?page=0&size=10
+
+3. Documentar los endpoints:
+Usar Swagger (springdoc-openapi) para exponer y probar la API.
+
+✅ Conclusión
+Tu EmpleadoController está bien implementado, y cumple con los principios de REST y Sp
+```
+
+### Modificaciones Realizadas:
+- Remoción de @Valid: Se eliminó la anotación @Valid de los parámetros @RequestBody en los métodos crear() y actualizar() debido a dificultades en la configuración de validaciones. Se verá la formar de agregarlo nuevamente más adelante cuando se implemente correctamente el sistema de validaciones
+- Sugerencias de mejora identificadas: Se identificaron tres posibles mejoras futuras:
+    - Implementar @ControllerAdvice para manejo global de excepciones
+    - Agregar paginación con Pageable en el endpoint obtenerTodos()
+    - Integrar documentación automática con Swagger/OpenAPI
+    
+### Explicación del Prompt:
+Este prompt fue estratégicamente diseñado para obtener una comprensión completa de APIs REST con Spring MVC. La metodología incluye:
+
+- Enfoque en fundamentos REST: Se solicitó explicación de @RestController y arquitectura REST para establecer bases conceptuales sólidas
+- Análisis técnico de anotaciones: Se priorizó la comprensión de cada annotation HTTP mapping y su función específica en el ecosistema Spring
+- Comprensión de parámetros HTTP: Se incluyó análisis detallado de @PathVariable, @RequestParam y @RequestBody para entender el manejo de datos en requests
+- Mapeo URL-método: Se solicitó análisis específico de cada endpoint con ejemplos de URLs reales para facilitar comprensión práctica
+- Evaluación de mejores prácticas: Se pidió revisión crítica del código actual y sugerencias de mejora para optimización y escalabilidad
+- Formato práctico: Se estructuró para obtener explicaciones con ejemplos concretos de URLs y requests HTTP
+
+La efectividad del prompt radica en su progresión desde conceptos fundamentales hasta aplicación práctica con ejemplos reales.
+
+### Aprendizajes Obtenidos:
+- @RestController como combinación: Comprendí que es equivalente a @Controller + @ResponseBody, automatizando la serialización JSON de respuestas
+- Arquitectura REST: Aprendí cómo los métodos HTTP estándar (GET, POST, PUT, DELETE) mapean a operaciones CRUD en recursos
+- Jerarquía de rutas: Entendí cómo @RequestMapping a nivel de clase define el path base para todos los endpoints del controlador
+- Diferencia entre @PathVariable y @RequestParam: Aprendí que PathVariable extrae datos de la URL path mientras RequestParam obtiene parámetros de query string
+- Validación automática con @Valid: Comprendí que Spring automáticamente valida objetos de entrada basándose en las anotaciones de validación de la entidad
+- Códigos de estado HTTP semánticos: Aprendí la importancia de usar códigos apropiados (201 CREATED, 204 NO_CONTENT) para comunicar resultados de operaciones
+- Serialización automática JSON: Entendí que Spring Boot automáticamente convierte objetos Java a JSON en respuestas HTTP
+- Separación de responsabilidades: Reforcé que el controlador debe ser delgado, delegando lógica de negocio al service layer
+- Manejo global de excepciones: Descubrí la importancia de @ControllerAdvice para centralizar el manejo de errores y proporcionar respuestas consistentes
 ---
 
 ## Prompt n: [Descripción breve]
