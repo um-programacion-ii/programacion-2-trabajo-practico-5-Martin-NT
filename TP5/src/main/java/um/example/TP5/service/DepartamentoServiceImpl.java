@@ -6,6 +6,7 @@ import um.example.TP5.entity.Departamento;
 import um.example.TP5.entity.Empleado;
 import um.example.TP5.exception.DepartamentoNoEncontradoException;
 import um.example.TP5.exception.EmpleadoNoEncontradoException;
+import um.example.TP5.exception.ProyectoYaExisteException;
 import um.example.TP5.repository.DepartamentoRepository;
 
 import java.util.List;
@@ -21,8 +22,12 @@ public class DepartamentoServiceImpl implements DepartamentoService {
 
     @Override
     public Departamento guardar(Departamento departamento) {
+        if (departamentoRepository.findByNombre(departamento.getNombre()).isPresent()) {
+            throw new DepartamentoYaExisteException("El departamento ya ha sido creado: " + departamento.getNombre());
+        }
         return departamentoRepository.save(departamento);
     }
+
 
     @Override
     public Departamento buscarPorId(Long id) {
