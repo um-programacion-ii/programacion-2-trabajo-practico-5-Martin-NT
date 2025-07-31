@@ -3,10 +3,8 @@ package um.example.TP5.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import um.example.TP5.entity.Departamento;
-import um.example.TP5.entity.Empleado;
 import um.example.TP5.exception.DepartamentoNoEncontradoException;
-import um.example.TP5.exception.EmpleadoNoEncontradoException;
-import um.example.TP5.exception.ProyectoYaExisteException;
+import um.example.TP5.exception.DepartamentoYaExisteException;
 import um.example.TP5.repository.DepartamentoRepository;
 
 import java.util.List;
