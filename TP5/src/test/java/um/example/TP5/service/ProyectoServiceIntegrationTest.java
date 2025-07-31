@@ -216,7 +216,4 @@ public class ProyectoServiceIntegrationTest {
         assertEquals("Proyecto Activo", activos.get(0).getNombre());
         assertTrue(activos.get(0).getFechaFin().isAfter(hoy));
     }
-
-
-
 }

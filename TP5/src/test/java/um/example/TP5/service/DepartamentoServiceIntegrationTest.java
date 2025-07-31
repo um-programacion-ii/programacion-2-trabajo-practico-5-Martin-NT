@@ -181,6 +181,4 @@ public class DepartamentoServiceIntegrationTest {
             departamentoService.eliminar(9999L);
         });
     }
-
-
 }
