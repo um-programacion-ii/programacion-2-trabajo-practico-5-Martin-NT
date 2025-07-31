@@ -55,4 +55,10 @@ public class EmpleadoController {
         @RequestParam BigDecimal max) {
         return empleadoService.buscarPorRangoSalario(min, max);
     }
+
+    @GetMapping("/salario/promedio/{departamentoId}")
+    public BigDecimal obtenerSalarioPromedioPorDepartamento(@PathVariable Long departamentoId) {
+        return empleadoService.obtenerSalarioPromedioPorDepartamento(departamentoId);
+    }
+
 }
