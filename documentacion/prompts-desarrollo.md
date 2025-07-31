@@ -237,137 +237,7 @@ Utilicé este prompt porque necesitaba:
 
 ---
 
-## Prompt 2: Validación y Optimización de Entidad JPA - Departamento
-
-### Prompt Utilizado:
-```
-Revisa mi entidad Departamento y su relación con Empleado:
-
-package um.example.TP5.entity;
-
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
-
-@Entity
-@Table(name = "departamentos")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Departamento {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, length = 100, unique = true)
-    private String nombre;
-
-    @Column(length = 500)
-    private String descripcion;
-
-    @OneToMany(mappedBy = "departamento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Empleado> empleados = new ArrayList<>();
-}
-
-Como experto en JPA, verifica:
-
-Relación bidireccional: ¿Está bien configurada la relación OneToMany en Departamento con la ManyToOne en Empleado?
-Anotaciones JPA: ¿Todas las anotaciones son correctas y necesarias?
-Performance: ¿Los FetchType y CascadeType son apropiados?
-Consistencia: ¿El diseño es coherente con las mejores prácticas?
-Problemas potenciales: ¿Hay algo que pueda causar errores en runtime?
-
-Dame feedback específico y código corregido si es necesario.
-```
-
-### Respuesta Recibida:
-```
-✅ 1. RELACIÓN BIDIRECCIONAL: OneToMany / ManyToOne
-En Departamento:
-@OneToMany(mappedBy = "departamento", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-private List<Empleado> empleados = new ArrayList<>();
-
-En Empleado:
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "departamento_id")
-private Departamento departamento;
-
-✔️ Veredicto: Relación bien definida
-- mappedBy = "departamento" está correctamente apuntando al atributo de tipo Departamento en Empleado.
-- ManyToOne es el lado propietario de la relación (owning side), mientras que OneToMany es el lado inverso (inverse side). Eso está bien definido.
-
-✅ 2. ANOTACIONES JPA
-✔️ Todas las anotaciones son correctas y necesarias.
-
-Sugerencia menor:
-Agregar @ToString.Exclude a la colección para evitar ciclos infinitos con Lombok:
-@ToString.Exclude
-@OneToMany(...)
-private List<Empleado> empleados = new ArrayList<>();
-
-✅ 3. PERFORMANCE: FetchType y Cascade
-✅ fetch = FetchType.LAZY
-Perfecto: evita traer toda la lista de empleados cuando no es necesario.
-
-✅ cascade = CascadeType.ALL
-Adecuado si cuando guardás/borrás un Departamento, también querés persistir/borrar sus Empleados. Si no querés eliminar empleados al eliminar el departamento, podrías usar solo:
-cascade = {CascadeType.PERSIST, CascadeType.MERGE}
-Pero CascadeType.ALL es válido si te asegurás de manejar bien la lógica de borrado.
-
-✅ 4. CONSISTENCIA Y NOMENCLATURA
-- El uso de nombres (empleados, departamento) es claro y estándar.
-- Los nombres de columnas, longitud y restricciones están bien.
-- La lista está inicializada correctamente (new ArrayList<>()), lo cual previene NullPointerException.
-
-⚠️ 5. POTENCIALES PROBLEMAS EN RUNTIME
-🔁 Peligro: ciclo infinito con @Data
-Con relaciones bidireccionales, el uso de @Data puede causar:
-- Ciclos en toString()
-- Ciclos en equals() y hashCode() (si la relación se incluye)
-📌 Solución recomendada:
-@ToString.Exclude
-@EqualsAndHashCode.Exclude
-@OneToMany(...)
-private List<Empleado> empleados = new ArrayList<>();
-Esto evita que toString(), equals() y hashCode() entren en bucles infinitos.
-
-✅ CONCLUSIÓN FINAL
-✔️ Tu clase está bien estructurada y funcional.
-🔁 Agregar @ToString.Exclude y @EqualsAndHashCode.Exclude si usás Lombok.
-🧹 Todo el resto está conforme a buenas prácticas y es consistente.
-```
-
-### Modificaciones Realizadas:
-- No hice ninguna modificación, el codigo que le pase estaba correcto
-- Se tendrá en cuenta para mas adelante el uso de anotaciones de Lombok para evitar ciclos infinitos:
-
-### Explicación del Prompt:
-Este prompt fue diseñado estratégicamente para obtener una revisión exhaustiva de una entidad JPA compleja. Se estructuró de la siguiente manera:
-
-- Contexto específico: Se proporcionó el código completo de la entidad para permitir un análisis concreto
-- Rol definido: Se solicitó actuar "como experto en JPA" para obtener respuestas técnicas especializadas
-- Puntos de revisión estructurados: Se definieron 5 áreas clave de análisis (relación bidireccional, anotaciones, performance, consistencia, problemas potenciales)
-- Solicitud de feedback específico: Se pidió tanto análisis como código corregido cuando fuera necesario
-- Enfoque en problemas prácticos: Se priorizó la identificación de errores en runtime y problemas de rendimiento
-
-La efectividad del prompt radica en su especificidad y estructura clara, lo que permitió obtener una respuesta organizada y práctica.
-
-### Aprendizajes Obtenidos:
-- Gestión de relaciones bidireccionales: Confirmé que el lado @ManyToOne es el propietario (owning side) y controla la relación, mientras que @OneToMany con mappedBy es el lado inverso
-- Problemas con Lombok en relaciones JPA: Descubrí que @Data puede causar ciclos infinitos en toString(), equals() y hashCode() cuando hay relaciones bidireccionales, requiriendo el uso de @ToString.Exclude y @EqualsAndHashCode.Exclude
-- Estrategias de cascada: Aprendí que CascadeType.ALL puede ser riesgoso ya que incluye REMOVE, y que para casos más conservadores es mejor usar combinaciones específicas como {CascadeType.PERSIST, CascadeType.MERGE}
-- Importancia del FetchType.LAZY: Confirmé que es la mejor práctica para colecciones grandes para evitar problemas de rendimiento (N+1 queries)
-- Inicialización de colecciones: Validé que inicializar listas con new ArrayList<>() previene NullPointerException y es una buena práctica
-- Naming conventions: Reforcé la importancia de nombres descriptivos y consistentes tanto en atributos Java como en nombres de columnas de base de datos
-- Configuración de constraints: Aprendí sobre el uso efectivo de nullable = false, unique = true y length para garantizar integridad de datos
-
----
-
-## Prompt 3: Análisis y Explicación de EmpleadoRepository - Spring Data JPA
+## Prompt 2: Análisis y Explicación de EmpleadoRepository - Spring Data JPA
 
 ### Prompt Utilizado:
 ```
@@ -494,7 +364,7 @@ La efectividad del prompt radica en su equilibrio entre explicación teórica y 
 
 ---
 
-## Prompt 4: [Análisis y Explicación de la Capa de Servicio - EmpleadoService]
+## Prompt 3: [Análisis y Explicación de la Capa de Servicio - EmpleadoService]
 
 ### Prompt Utilizado:
 ```
@@ -715,7 +585,7 @@ Validaciones cruzadas: Descubrí la necesidad de validar relaciones entre entida
 
 ---
 
-## Prompt 5: [Análisis y Explicación de EmpleadoController - API REST Spring MVC]
+## Prompt 4: [Análisis y Explicación de EmpleadoController - API REST Spring MVC]
 
 ### Prompt Utilizado:
 ```
@@ -938,6 +808,147 @@ La efectividad del prompt radica en su progresión desde conceptos fundamentales
 - Serialización automática JSON: Entendí que Spring Boot automáticamente convierte objetos Java a JSON en respuestas HTTP
 - Separación de responsabilidades: Reforcé que el controlador debe ser delgado, delegando lógica de negocio al service layer
 - Manejo global de excepciones: Descubrí la importancia de @ControllerAdvice para centralizar el manejo de errores y proporcionar respuestas consistentes
+
+---
+
+## Prompt 5: [Implementación y Explicación de @ControllerAdvice - Manejo Global de Excepciones]
+
+### Prompt Utilizado:
+```
+Quiero usar ControllerAdvice como funciona? que hace? y como deberia usarlo ?
+```
+
+### Respuesta Recibida:
+```
+Excelente decisión. @ControllerAdvice es una anotación poderosa de Spring que permite manejar errores de forma centralizada en tu aplicación REST. Te explico de forma clara y práctica cómo funciona, qué hace y cómo debés usarlo:
+
+✅ ¿Qué es @ControllerAdvice?
+Es una anotación de clase que le indica a Spring que esa clase se usará para manejar excepciones globales, validaciones o incluso modificar respuestas de los controladores (@RestController).
+
+🎯 ¿Qué hace?
+- Captura errores lanzados en cualquier controlador (@RestController) sin necesidad de escribir try-catch en cada uno.
+- Convierte las excepciones Java en respuestas HTTP claras (con código de estado + mensaje).
+- Te permite unificar el manejo de errores en una sola clase, lo que mejora el mantenimiento del código.
+
+🧠 ¿Cómo funciona?
+Internamente Spring:
+
+1. Detecta tu clase anotada con @ControllerAdvice.
+2. Intercepta cualquier excepción lanzada por los controladores.
+3. Si la excepción coincide con alguna definida en @ExceptionHandler(...), ejecuta ese método.
+4. Devuelve la respuesta personalizada al cliente (por ejemplo: 404 Not Found con un JSON).
+
+🚀 ¿Qué es @RestControllerAdvice?
+- Es una combinación de @ControllerAdvice + @ResponseBody.
+- Se usa en aplicaciones REST, donde siempre se devuelve JSON o XML como respuesta.
+- Es el preferido para APIs modernas con @RestController.
+
+@RestControllerAdvice
+public class GlobalHandler {
+
+    @ExceptionHandler(Exception.class)
+    public Map<String, String> handleError(Exception ex) {
+        return Map.of("error", ex.getMessage()); // ya devuelve JSON
+    }
+}
+
+✍️ ¿Cómo usarlo en tu proyecto?
+1. Crear la clase GlobalExceptionHandler
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RecursoNoEncontradoException.class)
+    public ResponseEntity<Object> manejarRecursoNoEncontrado(RecursoNoEncontradoException ex) {
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("timestamp", LocalDateTime.now());
+        respuesta.put("mensaje", ex.getMessage());
+        respuesta.put("codigo", HttpStatus.NOT_FOUND.value());
+
+        return new ResponseEntity<>(respuesta, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> manejarErrorGeneral(Exception ex) {
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("timestamp", LocalDateTime.now());
+        respuesta.put("mensaje", "Error interno del servidor");
+        respuesta.put("detalle", ex.getMessage());
+        respuesta.put("codigo", HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+        return new ResponseEntity<>(respuesta, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+2. Crear una excepción personalizada
+package um.example.TP5.exception;
+
+public class RecursoNoEncontradoException extends RuntimeException {
+    public RecursoNoEncontradoException(String mensaje) {
+        super(mensaje);
+    }
+}
+
+3. Usar esa excepción en tu service
+@Override
+public Departamento buscarPorId(Long id) {
+    return departamentoRepository.findById(id)
+        .orElseThrow(() -> new RecursoNoEncontradoException("Departamento con ID " + id + " no encontrado"));
+}
+
+🔎 ¿Cómo se ve al probarlo?
+Si llamás a /api/departamentos/999 y no existe, vas a recibir:
+{
+  "timestamp": "2025-07-31T12:47:33.123",
+  "mensaje": "Departamento con ID 999 no encontrado",
+  "codigo": 404
+}
+
+📌 Ventajas
+- Evitás repetir try-catch en todos los controladores.
+- Tu API queda más profesional.
+- Podés manejar errores 400, 404, 500... todos desde un solo lugar.
+
+📌 ¿Cuál deberías usar?
+- ✅ Usá @RestControllerAdvice cuando tu aplicación es una API REST que trabaja con @RestController.
+- ❌ No uses @ControllerAdvice solo a menos que estés haciendo una app con vistas web (como Thymeleaf o JSP).
+
+| Característica                  | `@ControllerAdvice`                 | `@RestControllerAdvice`   |
+| ------------------------------- | ----------------------------------- | ------------------------- |
+| ¿Devuelve JSON automáticamente? | ❌ No, requiere `@ResponseBody`      | ✅ Sí, lo hace por defecto |
+| Uso típico                      | Apps MVC con vistas (HTML, JSP)     | APIs REST                 |
+| Equivalente a                   | `@ControllerAdvice + @ResponseBody` | —                         |
+
+```
+
+### Modificaciones Realizadas:
+- Implementación completa de GlobalExceptionHandler: Se creó una clase centralizada para manejo de todas las excepciones personalizadas del proyecto
+- Método helper para respuestas consistentes: Se implementó construirRespuesta() para estandarizar el formato de todas las respuestas de error
+-Manejo de múltiples excepciones: Se agregaron handlers específicos para 6 tipos de excepciones diferentes (DepartamentoNoEncontradoException, EmailDuplicadoException, EmpleadoNoEncontradoException, etc.)
+- Uso de @RestControllerAdvice: Se optó por esta anotación en lugar de @ControllerAdvice para manejo automático de serialización JSON
+
+### Explicación del Prompt:
+Este prompt fue diseñado con un enfoque directo y práctico para resolver una necesidad específica de implementación. La estrategia incluye:
+
+- Pregunta directa y específica: Se formuló una consulta concreta sobre funcionalidad, propósito y implementación de @ControllerAdvice
+- Enfoque en aplicación práctica: Se priorizó el "cómo usar" por encima de explicaciones teóricas extensas
+- Necesidad identificada: Surgió de la observación en prompts anteriores sobre la falta de manejo centralizado de excepciones
+- Brevedad intencional: Se mantuvo simple para obtener respuesta concisa pero completa
+- Orientación a implementación: Se buscó obtener código y ejemplos aplicables inmediatamente al proyecto
+
+La efectividad del prompt radica en su simplicidad y orientación hacia la acción inmediata.
+
+### Aprendizajes Obtenidos:
+- @RestControllerAdvice vs @ControllerAdvice: Comprendí que @RestControllerAdvice es la combinación de @ControllerAdvice + @ResponseBody, ideal para APIs REST que devuelven JSON automáticamente
+- Manejo centralizado de excepciones: Aprendí que permite interceptar y manejar errores globalmente sin necesidad de try-catch en cada controlador
+- Patrón @ExceptionHandler: Entendí cómo Spring mapea tipos específicos de excepciones a métodos handlers correspondientes
+Formato consistente de respuestas de error: Descubrí la importancia de estandarizar las respuestas de error con timestamp, status, error y mensaje
+- Códigos de estado HTTP semánticos: Aprendí a usar códigos apropiados como 404 NOT_FOUND para recursos no encontrados y 409 CONFLICT para duplicados
+- LinkedHashMap para orden: Comprendí que LinkedHashMap mantiene el orden de inserción de campos en la respuesta JSON
+- Método helper para DRY: Aprendí a crear métodos privados como construirRespuesta() para evitar duplicación de código
+- Jerarquía de excepciones: Entendí cómo crear excepciones personalizadas que extienden RuntimeException para diferentes casos de error
+- Interceptación automática: Comprendí que Spring automáticamente detecta clases @RestControllerAdvice y las registra como interceptores globales
+- Mejora en experiencia de usuario: Aprendí que respuestas de error consistentes y descriptivas mejoran significativamente la usabilidad de la API
+
 ---
 
 ## Prompt n: [Descripción breve]
