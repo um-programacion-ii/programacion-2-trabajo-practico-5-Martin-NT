@@ -39,7 +39,7 @@ public class ProyectoController {
         proyectoService.eliminar(id);
     }
 
-    @GetMapping("id/{id}")
+    @GetMapping("/{id}")
     public Proyecto obtenerPorId(@PathVariable Long id) {
         return proyectoService.buscarPorId(id);
     }
