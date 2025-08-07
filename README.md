@@ -142,6 +142,152 @@ Desarrollar un sistema de gestión de empleados utilizando Spring Boot con JPA, 
 - Mockito 5.8.0
 - Git y GitHub
 
+## 🔧 Instrucciones de Instalación
+
+### 1. Clonar el Repositorio
+```bash
+git clone git@github.com:um-programacion-ii/programacion-2-trabajo-practico-5-Martin-NT.git
+```
+
+### 2. Ingresar a la Carpeta del Proyecto
+```bash
+cd TP5
+```
+
+## 🐳 Instrucciones para Docker 
+
+### 3. Levantar Bases de Datos con Docker
+```bash
+docker compose up -d
+```
+Esto inicia los contenedores de:
+- `empleados_mysql` (puerto 3306)
+- `empleados_postgres` (puerto 5432)
+
+### 4. Verificar que los Contenedores Estén Corriendo
+```bash
+docker compose ps
+```
+
+### 5. (Opcional) Ver Logs de los Contenedores
+```bash
+docker compose logs -f
+```
+
+## 🚀 Ejecución de la Aplicación
+
+### Ejecutar con Base de Datos H2 (desarrollo) 
+Esta opción usa una base de datos en memoria, ideal para pruebas rápidas.
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+Abrir consola H2 en el navegador:
+```bash
+http://localhost:8080/h2-console
+```
+Datos de conexión:
+- JDBC URL: `jdbc:h2:mem:testdb`
+- User: `sa`
+- Password: *(dejar vacío)*
+
+### Ejecutar con MySQL
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=mysql
+```
+
+### Ejecutar con PostgreSQL
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=postgres
+```
+
+## 📮 Documentación de Endpoints
+
+### 🔹 Empleados
+
+| Método | Endpoint              | Descripción                 | 
+|--------|-----------------------|-----------------------------|
+| GET    | /api/empleados        | Obtener todos los empleados | 
+| GET    | /api/empleados/{id}   | Obtener un empleado por ID  |
+| POST   | /api/empleados        | Crear nuevo empleado        | 
+| PUT    | /api/empleados/{id}   | Actualizar empleado         |
+| DELETE | /api/empleados/{id}   | Eliminar empleado           |
+
+### 🔹 Departamentos
+| Método | Endpoint                 | Descripción                     | 
+|--------|--------------------------|---------------------------------|
+| GET    | /api/departamentos       | Obtener todos los departamentos | 
+| GET    | /api/departamentos/{id}  | Obtener un departamento por ID  |
+| POST   | /api/departamentos       | Crear nuevo departamento        | 
+| PUT    | /api/departamentos/{id}  | Actualizar departamento         |
+| DELETE | /api/departamentos/{id}  | Eliminar departamento           |
+
+
+### 🔹 Proyectos
+| Método | Endpoint             | Descripción                 | 
+|--------|----------------------|-----------------------------|
+| GET    | /api/proyectos       | Obtener todos los proyectos | 
+| GET    | /api/proyectos/{id}  | Obtener un proyecto por ID  |
+| POST   | /api/proyectos       | Crear nuevo proyecto        | 
+| PUT    | /api/proyectos/{id}  | Actualizar proyecto         |
+| DELETE | /api/proyectos/{id}  | Eliminar proyecto           |
+
+## 🧪 Ejemplos de Uso
+Una vez que la aplicación esté ejecutándose (con cualquiera de los perfiles), podés acceder y probar los endpoints de la API.
+
+### Consultas desde Navegador o curl
+```bash
+curl http://localhost:8080/api/empleados
+curl http://localhost:8080/api/departamentos
+curl http://localhost:8080/api/proyectos
+curl http://localhost:8080/api/empleados/1
+```
+
+### Crear un Empleado desde Postman o curl
+- **Desde Postman:**  
+  1. Abrí Postman y seleccioná el método **POST**.  
+  2. Ingresá la URL del endpoint para crear un empleado:  
+     ```
+     http://localhost:8080/api/empleados
+     ```  
+  3. En la pestaña "Body", seleccioná **raw** y luego **JSON** como tipo.  
+  4. Escribí el JSON con los datos a crear, por ejemplo:  
+     ```json
+     {
+       "nombre": "Sofía",
+       "apellido": "Pérez",
+       "email": "sofia.perez@empresa.com",
+       "fechaContratacion": "2025-08-06",
+       "salario": 45000.00
+     }
+     ```  
+  5. Hacé click en "Enviar" y revisá la respuesta del servidor para confirmar que se creó correctamente.
+
+- **Desde la terminal con curl:**  
+  ```bash
+  curl -X POST http://localhost:8080/api/empleados     -H "Content-Type: application/json"     -d '{"nombre":"Sofía", "apellido":"Pérez", "email":"sofia.perez@empresa.com", "fechaContratacion":"2025-08-06", "salario":45000}'
+  ```
+
+## 🧪 Ejecutar Tests
+```bash
+./mvnw test
+```
+Usa por defecto la base de datos H2 en memoria (perfil dev).
+
+## 🐳 Instrucciones para Docker 
+
+### Apagar contenedores de base de datos  
+```bash
+docker compose down
+```
+Detiene los contenedores sin borrar los volúmenes (datos persistentes).
+
+### Apagar contenedores y eliminar los volúmenes  
+```bash
+docker compose down -v
+```
+Esto elimina los datos de las bases y reinicia el estado si volvés a levantar los contenedores.
+
 ## 📊 Casos de Uso del Sistema
 
 ### CU-001: Gestionar Empleados
